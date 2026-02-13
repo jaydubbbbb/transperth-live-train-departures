@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queens Park Station - Live Departures</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚆</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #2c5f2d 0%, #1e4620 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            font-size: 1.4em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .section-header .direction {
+            font-size: 0.9em;
+        }
+
+        .section-header .refresh-icon {
+            font-size: 0.7em;
+            opacity: 0.8;
+            animation: fadeIn 2s infinite;
+        }
+
+        @keyframes fadeIn {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        .departure-board {
+            background: #1a1a1a;
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .departure-item {
+            display: grid;
+            grid-template-columns: 80px 1fr 120px 100px;
+            gap: 15px;
+            padding: 18px 20px;
+            border-bottom: 1px solid #333;
+            color: white;
+            transition: background 0.3s;
+            align-items: center;
+        }
+
+        .departure-item:hover {
+            background: #252525;
+        }
+
+        .departure-item:last-child {
+            border-bottom: none;
+        }
+
+        .platform {
+            background: linear-gradient(135deg, #3a7ca5 0%, #2c5f7f 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.3em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .platform-label {
+            font-size: 0.5em;
+            display: block;
+            margin-bottom: 2px;
+            opacity: 0.9;
+        }
+
+        .destination {
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+
+        .stops {
+            font-size: 0.85em;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        .pattern {
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .pattern-label {
+            display: block;
+            opacity: 0.6;
+            font-size: 0.85em;
+            margin-bottom: 3px;
+        }
+
+        .pattern-value {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .time {
+            text-align: right;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .time.soon {
+            color: #ff9800;
+            animation: pulse 1.5s infinite;
+        }
+
+        .time.now {
+            color: #f44336;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .error {
+            background: #d32f2f;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 20px;
+        }
+
+        .no-trains {
+            padding: 30px;
+            text-align: center;
+            color: #999;
+            font-style: italic;
+        }
+
+        .config-panel {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .config-panel h3 {
+            margin-bottom: 10px;
+        }
+
+        .config-panel input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #444;
+            background: #1a1a1a;
+            color: white;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .config-panel button {
+            background: #2c5f2d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .config-panel button:hover {
+            background: #3d7a3e;
+        }
+
+        @media (max-width: 768px) {
+            .departure-item {
+                grid-template-columns: 70px 1fr 90px;
+                gap: 10px;
+            }
+
+            .pattern {
+                display: none;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .time {
+                font-size: 1.4em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚆 Queens Park Station</h1>
+            <p>Live Departure Times</p>
+        </div>
+
+        <!-- Configuration Panel (only shown if API endpoint not set) -->
+        <div id="config-panel" class="config-panel" style="display: none;">
+            <h3>⚙️ Configuration Required</h3>
+            <p>Enter your backend API endpoint URL:</p>
+            <input type="text" id="api-endpoint" placeholder="http://localhost:5000" value="http://localhost:5000">
+            <button onclick="saveConfig()">Save & Connect</button>
+            <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.7;">
+                Deploy the backend.py script on a server and enter its URL here.
+            </p>
+        </div>
+
+        <div id="error-container"></div>
+
+        <!-- To Perth Section -->
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <span class="direction">→ To Perth</span>
+                </div>
+                <span class="refresh-icon">●</span>
+            </div>
+            <div class="departure-board" id="perth-departures">
+                <div class="loading">Loading departures</div>
+            </div>
+        </div>
+
+        <!-- To Cockburn/Byford Section -->
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <span class="direction">→ To Cockburn / Byford</span>
+                </div>
+                <span class="refresh-icon">●</span>
+            </div>
+            <div class="departure-board" id="south-departures">
+                <div class="loading">Loading departures</div>
+            </div>
+        </div>
+
+        <div class="last-updated" id="last-updated"></div>
+    </div>
+
+    <script>
+        // Configuration
+        const REFRESH_INTERVAL = 30000; // 30 seconds
+        const UPDATE_DISPLAY_INTERVAL = 10000; // 10 seconds
+        let API_ENDPOINT = localStorage.getItem('api_endpoint') || '';
+        let lastFetchedData = null;
+
+        function saveConfig() {
+            const endpoint = document.getElementById('api-endpoint').value.trim();
+            if (endpoint) {
+                API_ENDPOINT = endpoint.replace(/\/$/, ''); // Remove trailing slash
+                localStorage.setItem('api_endpoint', API_ENDPOINT);
+                document.getElementById('config-panel').style.display = 'none';
+                updateAllDepartures();
+            }
+        }
+
+        function getTimeDisplay(minutes) {
+            if (minutes < 1) {
+                return { text: 'NOW', class: 'now' };
+            } else if (minutes < 5) {
+                return { text: `${minutes} min`, class: 'soon' };
+            } else {
+                return { text: `${minutes} min`, class: '' };
+            }
+        }
+
+        function renderDepartures(departures, containerId) {
+            const container = document.getElementById(containerId);
+            
+            if (!departures || departures.length === 0) {
+                container.innerHTML = '<div class="no-trains">No upcoming departures</div>';
+                return;
+            }
+
+            container.innerHTML = departures.map(dep => {
+                const timeInfo = getTimeDisplay(dep.minutes);
+                return `
+                    <div class="departure-item">
+                        <div class="platform">
+                            <span class="platform-label">Platform</span>
+                            ${dep.platform}
+                        </div>
+                        <div class="destination">
+                            ${dep.destination}
+                            <div class="stops">${dep.stops}</div>
+                        </div>
+                        <div class="pattern">
+                            <span class="pattern-label">Pattern</span>
+                            <span class="pattern-value">${dep.pattern}</span>
+                        </div>
+                        <div class="time ${timeInfo.class}">${timeInfo.text}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showError(message) {
+            const errorContainer = document.getElementById('error-container');
+            errorContainer.innerHTML = `<div class="error">${message}</div>`;
+            setTimeout(() => {
+                errorContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        async function updateAllDepartures() {
+            if (!API_ENDPOINT) {
+                document.getElementById('config-panel').style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_ENDPOINT}/api/departures`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Unknown error occurred');
+                }
+
+                lastFetchedData = data;
+                
+                renderDepartures(data.perth, 'perth-departures');
+                renderDepartures(data.south, 'south-departures');
+
+                // Update last updated time
+                const lastUpdated = new Date(data.last_updated);
+                document.getElementById('last-updated').textContent = 
+                    `Last updated: ${lastUpdated.toLocaleTimeString()}`;
+
+            } catch (error) {
+                console.error('Error updating departures:', error);
+                showError(`Unable to fetch live departure times: ${error.message}`);
+                
+                // If we have cached data, keep displaying it
+                if (lastFetchedData) {
+                    renderDepartures(lastFetchedData.perth, 'perth-departures');
+                    renderDepartures(lastFetchedData.south, 'south-departures');
+                }
+            }
+        }
+
+        function updateDisplayTimes() {
+            // Update the time displays without fetching new data
+            if (lastFetchedData) {
+                renderDepartures(lastFetchedData.perth, 'perth-departures');
+                renderDepartures(lastFetchedData.south, 'south-departures');
+            }
+        }
+
+        // Initial load
+        if (API_ENDPOINT) {
+            updateAllDepartures();
+        } else {
+            document.getElementById('config-panel').style.display = 'block';
+        }
+
+        // Refresh data every 30 seconds
+        setInterval(updateAllDepartures, REFRESH_INTERVAL);
+
+        // Update time displays every 10 seconds
+        setInterval(updateDisplayTimes, UPDATE_DISPLAY_INTERVAL);
+    </script>
+</body>
+</html>

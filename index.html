@@ -1484,10 +1484,8 @@
                     const color = getLineColor(lineArray[0]);
                     const textColor = getLineTextColor(lineArray[0]);
                     html += `
-                        <div class="section-header" style="margin-top: 15px; background: ${color}; color: ${textColor}; justify-content: center;">
-                            <div>
-                                <span class="direction">${lineArray[0]}</span>
-                            </div>
+                        <div class="section-header" style="margin-top: 15px; background: ${color}; color: ${textColor}; justify-content: center; align-items: center;">
+                            <span class="direction">${lineArray[0]}</span>
                         </div>
                     `;
                 } else {
@@ -1500,7 +1498,7 @@
                         const color = getLineColor(lineName);
                         const textColor = getLineTextColor(lineName);
                         html += `
-                            <div style="flex: 1; background: ${color}; color: ${textColor}; padding: 15px 10px; font-size: 1.2em; font-weight: bold; text-align: center;">
+                            <div style="flex: 1; background: ${color}; color: ${textColor}; padding: 15px 10px; font-size: 1.2em; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center;">
                                 ${lineName}
                             </div>
                         `;

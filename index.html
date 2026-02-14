@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Queens Park Station - Live Departures</title>
+    <title>Transperth Live Departures</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚆</text></svg>">
     <style>
         * {
@@ -11,12 +11,50 @@
             padding: 0;
             box-sizing: border-box;
         }
+        
+        :root {
+            /* Dark mode colors (default) */
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2a2a2a;
+            --bg-tertiary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #999999;
+            --border-color: #2c5f2d;
+            --border-hover: #3d7a3e;
+            --border-active: #4CAF50;
+            --section-bg: #1a1a1a;
+            --input-bg: #1a1a1a;
+            --gradient-start: #1a1a1a;
+            --gradient-end: #2d2d2d;
+            --accent-green: #4CAF50;
+            --accent-orange: #ff9800;
+        }
+        
+        body.light-mode {
+            /* Light mode colors */
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e8e8e8;
+            --text-primary: #000000;
+            --text-secondary: #666666;
+            --border-color: #2c5f2d;  /* Darker green for borders */
+            --border-hover: #3d7a3e;
+            --border-active: #1e4620;
+            --section-bg: #ffffff;
+            --input-bg: #ffffff;
+            --gradient-start: #f5f5f5;
+            --gradient-end: #e8e8e8;
+            --accent-green: #2c5f2d;  /* Darker green for text */
+            --accent-orange: #d17400;  /* Darker orange for light mode */
+        }
 
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             min-height: 100vh;
             padding: 20px;
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
         }
 
         .container {
@@ -26,19 +64,262 @@
 
         .header {
             text-align: center;
-            color: white;
+            color: var(--text-primary);
             margin-bottom: 30px;
+            position: relative;
         }
 
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--border-color);
+            border-color: var(--border-active);
+        }
+        
+        .service-updates-link {
+            display: inline-block;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            text-decoration: none;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 10px;
+            border: 2px solid var(--border-color);
+        }
+        
+        .service-updates-link:hover {
+            border-color: var(--border-active);
+            background: var(--bg-tertiary);
+        }
+        
+        .service-updates-link::before {
+            content: '⚠️ ';
         }
 
         .header p {
             font-size: 1.1em;
             opacity: 0.9;
+        }
+
+        /* Station Selector */
+        .station-selector {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 0;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .station-selector label {
+            color: var(--text-primary);
+            font-size: 1.1em;
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .station-selector select {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1em;
+            border: 2px solid #2c5f2d;
+            background: #1a1a1a;
+            color: white;
+            border-radius: 0;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .station-select-row {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+            position: relative;
+        }
+        
+        .station-select-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        
+        .station-search-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1em;
+            border: 2px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border-radius: 0;
+            cursor: text;
+        }
+        
+        .station-search-input:focus {
+            outline: none;
+            border-color: var(--border-active);
+        }
+        
+        .station-search-input.searching {
+            color: #4CAF50;
+        }
+        
+        .station-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--input-bg);
+            border: 2px solid var(--border-color);
+            border-top: none;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .station-dropdown.show {
+            display: block;
+        }
+        
+        .station-option {
+            padding: 12px;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: background 0.2s;
+        }
+        
+        .station-option:hover {
+            background: var(--border-color);
+        }
+        
+        .station-option.selected {
+            background: var(--border-color);
+            border-left: 4px solid var(--border-active);
+        }
+        
+        .station-option .match {
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+        
+        .no-results {
+            padding: 12px;
+            color: var(--text-secondary);
+            font-style: italic;
+            text-align: center;
+        }
+        
+        .star-toggle-btn {
+            background: var(--input-bg);
+            color: var(--text-secondary);
+            border: 2px solid var(--border-color);
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 1.8em;
+            transition: all 0.3s;
+            min-width: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .star-toggle-btn:hover {
+            background: var(--border-color);
+            border-color: var(--border-active);
+        }
+        
+        .star-toggle-btn.favorited {
+            color: #FFD700;
+            background: var(--border-color);
+            border-color: var(--border-active);
+        }
+        
+        .favourites-container {
+            margin-top: 15px;
+        }
+        
+        .favourites-label {
+            color: var(--accent-green);
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            display: block;
+            font-weight: bold;
+        }
+        
+        .favourites-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .favourite-btn {
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .favourite-btn:hover {
+            background: var(--border-color);
+            border-color: var(--border-active);
+        }
+        
+        .favourite-btn.active {
+            background: var(--border-color);
+            border-color: var(--border-active);
+        }
+        
+        .favourite-btn .star {
+            color: #FFD700;
+            font-size: 1.1em;
+        }
+        
+        .current-station-indicator {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .current-station-indicator .station-name {
+            color: var(--accent-green);
+        }
+
+        .station-selector select:hover {
+            border-color: #3d7a3e;
+        }
+
+        .station-selector select:focus {
+            outline: none;
+            border-color: #4CAF50;
         }
 
         .section {
@@ -49,7 +330,7 @@
             background: linear-gradient(135deg, #2c5f2d 0%, #1e4620 100%);
             color: white;
             padding: 15px 20px;
-            border-radius: 8px 8px 0 0;
+            border-radius: 0;
             font-size: 1.4em;
             font-weight: bold;
             display: flex;
@@ -74,25 +355,25 @@
         }
 
         .departure-board {
-            background: #1a1a1a;
-            border-radius: 0 0 8px 8px;
+            background: var(--section-bg);
+            border-radius: 0;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
 
         .departure-item {
             display: grid;
-            grid-template-columns: 80px 1fr 120px 100px;
+            grid-template-columns: 80px 1fr 100px;
             gap: 15px;
             padding: 18px 20px;
-            border-bottom: 1px solid #333;
-            color: white;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
             transition: background 0.3s;
             align-items: center;
         }
 
         .departure-item:hover {
-            background: #252525;
+            background: var(--bg-tertiary);
         }
 
         .departure-item:last-child {
@@ -103,7 +384,7 @@
             background: linear-gradient(135deg, #3a7ca5 0%, #2c5f7f 100%);
             color: white;
             padding: 10px;
-            border-radius: 6px;
+            border-radius: 0;
             text-align: center;
             font-weight: bold;
             font-size: 1.3em;
@@ -128,32 +409,15 @@
             margin-top: 4px;
         }
 
-        .pattern {
-            text-align: center;
-            font-size: 0.9em;
-        }
-
-        .pattern-label {
-            display: block;
-            opacity: 0.6;
-            font-size: 0.85em;
-            margin-bottom: 3px;
-        }
-
-        .pattern-value {
-            font-weight: bold;
-            color: #4CAF50;
-        }
-
         .time {
             text-align: right;
             font-size: 1.8em;
             font-weight: bold;
-            color: #4CAF50;
+            color: var(--accent-green);
         }
 
         .time.soon {
-            color: #ff9800;
+            color: var(--accent-orange);
             animation: pulse 1.5s infinite;
         }
 
@@ -189,7 +453,7 @@
             background: #d32f2f;
             color: white;
             padding: 15px 20px;
-            border-radius: 8px;
+            border-radius: 0;
             margin-bottom: 20px;
             text-align: center;
         }
@@ -207,11 +471,32 @@
             color: #999;
             font-style: italic;
         }
+        
+        .show-more-btn {
+            background: var(--bg-secondary);
+            color: var(--accent-green);
+            border: 1px solid var(--border-color);
+            padding: 12px 20px;
+            width: 100%;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+            border-radius: 0;
+        }
+        
+        .show-more-btn:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border-hover);
+        }
+        
+        .show-more-btn:active {
+            background: var(--bg-primary);
+        }
 
         .config-panel {
             background: #2a2a2a;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 0;
             margin-bottom: 20px;
             color: white;
         }
@@ -226,7 +511,7 @@
             border: 1px solid #444;
             background: #1a1a1a;
             color: white;
-            border-radius: 4px;
+            border-radius: 0;
             margin-bottom: 10px;
         }
 
@@ -235,7 +520,7 @@
             color: white;
             border: none;
             padding: 10px 20px;
-            border-radius: 4px;
+            border-radius: 0;
             cursor: pointer;
             font-size: 1em;
         }
@@ -248,10 +533,6 @@
             .departure-item {
                 grid-template-columns: 70px 1fr 90px;
                 gap: 10px;
-            }
-
-            .pattern {
-                display: none;
             }
 
             .header h1 {
@@ -267,8 +548,13 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚆 Queens Park Station</h1>
-            <p>Live Departure Times</p>
+            <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">
+                🌙
+            </button>
+            <h1>🚆 Transperth Live Departures</h1>
+            <a href="https://www.transperth.wa.gov.au/Service-Updates" target="_blank" class="service-updates-link">
+                Service Updates & Disruptions
+            </a>
         </div>
 
         <!-- Configuration Panel (only shown if API endpoint not set) -->
@@ -282,13 +568,52 @@
             </p>
         </div>
 
+        <!-- Station Selector -->
+        <div class="station-selector">
+            <label for="station-search-input">🚉 Select Station:</label>
+            <div class="station-select-row">
+                <div class="station-select-wrapper">
+                    <input 
+                        type="text" 
+                        id="station-search-input" 
+                        class="station-search-input" 
+                        placeholder="Type to search stations..."
+                        autocomplete="off"
+                        onfocus="onStationInputFocus()"
+                        onblur="onStationInputBlur()"
+                        oninput="filterStations()"
+                        onkeydown="onStationInputKeydown(event)"
+                    />
+                    <div id="station-dropdown" class="station-dropdown">
+                        <!-- Options will be populated by JavaScript -->
+                    </div>
+                </div>
+                <button class="star-toggle-btn" id="star-toggle-btn" onclick="toggleFavourite()" title="Add to favourites">
+                    ☆
+                </button>
+            </div>
+            
+            <!-- Favourites Section -->
+            <div class="favourites-container" id="favourites-container">
+                <span class="favourites-label">⭐ Favourite Stations:</span>
+                <div class="favourites-buttons" id="favourites-buttons">
+                    <!-- Favourite buttons will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Current Station Indicator -->
+        <div class="current-station-indicator" id="current-station-indicator">
+            Showing departures for: <span class="station-name" id="current-station-name">Queens Park Stn</span>
+        </div>
+
         <div id="error-container"></div>
 
         <!-- To Perth Section -->
         <div class="section">
             <div class="section-header">
                 <div>
-                    <span class="direction">→ To Perth</span>
+                    <span class="direction">To Perth</span>
                 </div>
                 <span class="refresh-icon">●</span>
             </div>
@@ -297,11 +622,11 @@
             </div>
         </div>
 
-        <!-- To Cockburn/Byford Section -->
-        <div class="section">
-            <div class="section-header">
+        <!-- From Perth Section -->
+        <div class="section" id="south-section">
+            <div class="section-header" id="south-section-header">
                 <div>
-                    <span class="direction">→ To Cockburn / Byford</span>
+                    <span class="direction">From Perth</span>
                 </div>
                 <span class="refresh-icon">●</span>
             </div>
@@ -314,11 +639,444 @@
     </div>
 
     <script>
+        // All Transperth Stations
+        const STATIONS = [
+            { id: '188', name: 'Airport Central Stn' },
+            { id: '194', name: 'Alkimos Stn' },
+            { id: '73', name: 'Armadale Stn' },
+            { id: '74', name: 'Ashfield Stn' },
+            { id: '180', name: 'Aubin Grove Stn' },
+            { id: '204', name: 'Ballajura Stn' },
+            { id: '75', name: 'Bassendean Stn' },
+            { id: '76', name: 'Bayswater Stn' },
+            { id: '77', name: 'Beckenham Stn' },
+            { id: '79', name: 'Bull Creek Stn' },
+            { id: '80', name: 'Burswood Stn' },
+            { id: '175', name: 'Butler Stn' },
+            { id: '211', name: 'Byford Stn' },
+            { id: '81', name: 'Canning Bridge Stn' },
+            { id: '82', name: 'Cannington Stn' },
+            { id: '84', name: 'Carlisle Stn' },
+            { id: '85', name: 'Challis Stn' },
+            { id: '86', name: 'City West Stn' },
+            { id: '87', name: 'Claisebrook Stn' },
+            { id: '90', name: 'Claremont Stn' },
+            { id: '91', name: 'Clarkson Stn' },
+            { id: '92', name: 'Cockburn Central Stn' },
+            { id: '93', name: 'Cottesloe Stn' },
+            { id: '94', name: 'Currambine Stn' },
+            { id: '95', name: 'Daglish Stn' },
+            { id: '96', name: 'East Guildford Stn' },
+            { id: '97', name: 'East Perth Stn' },
+            { id: '98', name: 'Edgewater Stn' },
+            { id: '195', name: 'Eglinton Stn' },
+            { id: '177', name: 'Elizabeth Quay Stn' },
+            { id: '207', name: 'Ellenbrook Stn' },
+            { id: '100', name: 'Fremantle Stn' },
+            { id: '101', name: 'Glendalough Stn' },
+            { id: '102', name: 'Gosnells Stn' },
+            { id: '103', name: 'Grant Street Stn' },
+            { id: '104', name: 'Greenwood Stn' },
+            { id: '105', name: 'Guildford Stn' },
+            { id: '189', name: 'High Wycombe Stn' },
+            { id: '106', name: 'Joondalup Stn' },
+            { id: '107', name: 'Karrakatta Stn' },
+            { id: '108', name: 'Kelmscott Stn' },
+            { id: '109', name: 'Kenwick Stn' },
+            { id: '110', name: 'Kwinana Stn' },
+            { id: '193', name: 'Lakelands Stn' },
+            { id: '111', name: 'Leederville Stn' },
+            { id: '112', name: 'Loch Street Stn' },
+            { id: '113', name: 'Maddington Stn' },
+            { id: '114', name: 'Mandurah Stn' },
+            { id: '115', name: 'Maylands Stn' },
+            { id: '116', name: 'McIver Stn' },
+            { id: '119', name: 'Meltham Stn' },
+            { id: '120', name: 'Midland Stn' },
+            { id: '203', name: 'Morley Stn' },
+            { id: '121', name: 'Mosman Park Stn' },
+            { id: '122', name: 'Mt Lawley Stn' },
+            { id: '123', name: 'Murdoch Stn' },
+            { id: '210', name: 'Nicholson Road Stn' },
+            { id: '199', name: 'Noranda Stn' },
+            { id: '124', name: 'North Fremantle Stn' },
+            { id: '125', name: 'Oats Street Stn' },
+            { id: '182', name: 'Perth Stadium Stn' },
+            { id: '127', name: 'Perth Stn' },
+            { id: '133', name: 'Queens Park Stn' },
+            { id: '209', name: 'Ranford Road Stn' },
+            { id: '187', name: 'Redcliffe Stn' },
+            { id: '134', name: 'Rockingham Stn' },
+            { id: '135', name: 'Seaforth Stn' },
+            { id: '136', name: 'Shenton Park Stn' },
+            { id: '137', name: 'Sherwood Stn' },
+            { id: '139', name: 'Stirling Stn' },
+            { id: '140', name: 'Subiaco Stn' },
+            { id: '141', name: 'Success Hill Stn' },
+            { id: '142', name: 'Swanbourne Stn' },
+            { id: '143', name: 'Thornlie Stn' },
+            { id: '144', name: 'Victoria Park Stn' },
+            { id: '145', name: 'Victoria Street Stn' },
+            { id: '146', name: 'Warnbro Stn' },
+            { id: '147', name: 'Warwick Stn' },
+            { id: '148', name: 'Wellard Stn' },
+            { id: '150', name: 'West Leederville Stn' },
+            { id: '205', name: 'Whiteman Park Stn' },
+            { id: '151', name: 'Whitfords Stn' },
+            { id: '152', name: 'Woodbridge Stn' },
+            { id: '196', name: 'Yanchep Stn' }
+        ];
+
         // Configuration
         const REFRESH_INTERVAL = 30000; // 30 seconds
         const UPDATE_DISPLAY_INTERVAL = 10000; // 10 seconds
         let API_ENDPOINT = localStorage.getItem('api_endpoint') || '';
+        let CURRENT_STATION_ID = localStorage.getItem('station_id') || '133'; // Default Queens Park
         let lastFetchedData = null;
+        let FAVOURITE_STATIONS = JSON.parse(localStorage.getItem('favourite_stations') || '[]');
+        let isSearching = false;  // Track if user is actively searching
+        
+        // Theme management
+        function toggleTheme() {
+            const body = document.body;
+            const themeButton = document.getElementById('theme-toggle');
+            
+            body.classList.toggle('light-mode');
+            
+            // Update button icon
+            if (body.classList.contains('light-mode')) {
+                themeButton.textContent = '☀️';
+                localStorage.setItem('theme', 'light');
+            } else {
+                themeButton.textContent = '🌙';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        
+        // Load saved theme on startup
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeButton = document.getElementById('theme-toggle');
+            
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                themeButton.textContent = '☀️';
+            } else {
+                themeButton.textContent = '🌙';
+            }
+        }
+        
+        // Helper function to check if station uses Perth format
+        function isPerthStyleStation(stationId) {
+            return stationId === '127'; // Perth Stn (includes Underground data)
+        }
+        
+        // Favourites management functions
+        function saveFavourites() {
+            localStorage.setItem('favourite_stations', JSON.stringify(FAVOURITE_STATIONS));
+        }
+        
+        function isFavourite(stationId) {
+            return FAVOURITE_STATIONS.includes(stationId);
+        }
+        
+        function toggleFavourite() {
+            if (isFavourite(CURRENT_STATION_ID)) {
+                // Remove from favourites
+                FAVOURITE_STATIONS = FAVOURITE_STATIONS.filter(id => id !== CURRENT_STATION_ID);
+            } else {
+                // Add to favourites
+                FAVOURITE_STATIONS.push(CURRENT_STATION_ID);
+            }
+            saveFavourites();
+            renderFavourites();
+            updateStarButton();
+        }
+        
+        function switchToFavourite(stationId) {
+            CURRENT_STATION_ID = stationId;
+            localStorage.setItem('station_id', CURRENT_STATION_ID);
+            
+            // Update search input
+            const selectedStation = STATIONS.find(s => s.id === stationId);
+            if (selectedStation) {
+                document.getElementById('station-search-input').value = selectedStation.name;
+                document.title = `${selectedStation.name} - Live Departures`;
+                document.getElementById('current-station-name').textContent = selectedStation.name;
+            }
+            
+            // Show/hide sections based on station
+            const perthSection = document.querySelector('#perth-departures').closest('.section');
+            const southHeader = document.getElementById('south-section-header');
+            
+            if (isPerthStyleStation(CURRENT_STATION_ID)) {
+                perthSection.style.display = 'none';
+                if (southHeader) southHeader.style.display = 'none';
+            } else {
+                perthSection.style.display = 'block';
+                if (southHeader) southHeader.style.display = 'flex';
+            }
+            
+            // Clear and refresh
+            document.getElementById('perth-departures').innerHTML = '<div class="loading">Loading departures</div>';
+            document.getElementById('south-departures').innerHTML = '<div class="loading">Loading departures</div>';
+            
+            renderFavourites(); // Update active state
+            updateStarButton();
+            updateAllDepartures();
+        }
+        
+        function renderFavourites() {
+            const container = document.getElementById('favourites-buttons');
+            
+            if (FAVOURITE_STATIONS.length === 0) {
+                container.innerHTML = '<span style="color: #999; font-size: 0.9em; font-style: italic;">No favourite stations yet</span>';
+                return;
+            }
+            
+            container.innerHTML = FAVOURITE_STATIONS.map(stationId => {
+                const station = STATIONS.find(s => s.id === stationId);
+                if (!station) return '';
+                
+                const isActive = stationId === CURRENT_STATION_ID;
+                
+                // Remove " Stn" suffix for compact display
+                const displayName = station.name.replace(/\s+Stn$/i, '');
+                
+                return `
+                    <button class="favourite-btn ${isActive ? 'active' : ''}" onclick="switchToFavourite('${stationId}')">
+                        <span class="star">★</span>
+                        ${displayName}
+                    </button>
+                `;
+            }).join('');
+        }
+        
+        function removeFavourite(stationId) {
+            FAVOURITE_STATIONS = FAVOURITE_STATIONS.filter(id => id !== stationId);
+            saveFavourites();
+            renderFavourites();
+            updateStarButton();
+        }
+        
+        function updateStarButton() {
+            const btn = document.getElementById('star-toggle-btn');
+            if (isFavourite(CURRENT_STATION_ID)) {
+                btn.textContent = '★';
+                btn.classList.add('favorited');
+                btn.title = 'Remove from favourites';
+            } else {
+                btn.textContent = '☆';
+                btn.classList.remove('favorited');
+                btn.title = 'Add to favourites';
+            }
+        }
+
+        // Initialize
+        function init() {
+            populateStationSelector();
+            renderFavourites();
+            updateStarButton();
+            
+            // Update current station indicator
+            const selectedStation = STATIONS.find(s => s.id === CURRENT_STATION_ID);
+            if (selectedStation) {
+                document.getElementById('current-station-name').textContent = selectedStation.name;
+            }
+            
+            // Check if Perth-style station on load
+            const perthSection = document.querySelector('#perth-departures').closest('.section');
+            if (isPerthStyleStation(CURRENT_STATION_ID)) {
+                perthSection.style.display = 'none';
+            }
+            
+            if (API_ENDPOINT) {
+                updateAllDepartures();
+            } else {
+                document.getElementById('config-panel').style.display = 'block';
+            }
+        }
+
+        function populateStationSelector() {
+            const input = document.getElementById('station-search-input');
+            const dropdown = document.getElementById('station-dropdown');
+            
+            // Set current station name in input
+            const currentStation = STATIONS.find(s => s.id === CURRENT_STATION_ID);
+            if (currentStation) {
+                input.value = currentStation.name;
+            }
+            
+            // Sort stations alphabetically
+            STATIONS.sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Render all stations initially
+            renderStationOptions(STATIONS);
+        }
+        
+        function renderStationOptions(stationsToShow, searchTerm = '') {
+            const dropdown = document.getElementById('station-dropdown');
+            
+            if (stationsToShow.length === 0) {
+                dropdown.innerHTML = '<div class="no-results">No stations found</div>';
+                return;
+            }
+            
+            dropdown.innerHTML = stationsToShow.map(station => {
+                const isSelected = station.id === CURRENT_STATION_ID;
+                let displayName = station.name;
+                
+                // Highlight matching text
+                if (searchTerm) {
+                    const regex = new RegExp(`(${searchTerm})`, 'gi');
+                    displayName = displayName.replace(regex, '<span class="match">$1</span>');
+                }
+                
+                return `
+                    <div class="station-option ${isSelected ? 'selected' : ''}" 
+                         onclick="selectStation('${station.id}')">
+                        ${displayName}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function showStationDropdown() {
+            const dropdown = document.getElementById('station-dropdown');
+            dropdown.classList.add('show');
+            renderStationOptions(STATIONS);
+        }
+        
+        function onStationInputFocus() {
+            const input = document.getElementById('station-search-input');
+            
+            // Select all text so typing will replace it
+            input.select();
+            
+            // Show dropdown
+            showStationDropdown();
+            
+            // Mark as searching
+            isSearching = true;
+            input.classList.add('searching');
+        }
+        
+        function onStationInputBlur() {
+            const input = document.getElementById('station-search-input');
+            
+            // Reset to current station name if empty or no selection made
+            setTimeout(() => {
+                if (!isSearching || input.value.trim() === '') {
+                    const currentStation = STATIONS.find(s => s.id === CURRENT_STATION_ID);
+                    if (currentStation) {
+                        input.value = currentStation.name;
+                    }
+                }
+                isSearching = false;
+                input.classList.remove('searching');
+            }, 200);
+        }
+        
+        function onStationInputKeydown(event) {
+            // If user starts typing, we're in search mode
+            if (event.key.length === 1 || event.key === 'Backspace' || event.key === 'Delete') {
+                isSearching = true;
+            }
+            
+            // Handle Enter key
+            if (event.key === 'Enter') {
+                const dropdown = document.getElementById('station-dropdown');
+                const firstOption = dropdown.querySelector('.station-option');
+                if (firstOption) {
+                    const stationId = firstOption.getAttribute('onclick').match(/'([^']+)'/)[1];
+                    selectStation(stationId);
+                }
+            }
+            
+            // Handle Escape key
+            if (event.key === 'Escape') {
+                const input = document.getElementById('station-search-input');
+                input.blur();
+                hideStationDropdown();
+            }
+        }
+        
+        function hideStationDropdown() {
+            setTimeout(() => {
+                const dropdown = document.getElementById('station-dropdown');
+                dropdown.classList.remove('show');
+            }, 200);
+        }
+        
+        function filterStations() {
+            const input = document.getElementById('station-search-input');
+            const searchTerm = input.value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                renderStationOptions(STATIONS);
+                return;
+            }
+            
+            const filtered = STATIONS.filter(station => 
+                station.name.toLowerCase().includes(searchTerm)
+            );
+            
+            renderStationOptions(filtered, searchTerm);
+        }
+        
+        function selectStation(stationId) {
+            const station = STATIONS.find(s => s.id === stationId);
+            if (!station) return;
+            
+            // Update input
+            const input = document.getElementById('station-search-input');
+            input.value = station.name;
+            input.classList.remove('searching');
+            
+            // Mark searching as complete
+            isSearching = false;
+            
+            // Hide dropdown
+            hideStationDropdown();
+            
+            // Change station
+            CURRENT_STATION_ID = stationId;
+            localStorage.setItem('station_id', CURRENT_STATION_ID);
+            
+            // Update page title and indicator
+            document.title = `${station.name} - Live Departures`;
+            document.getElementById('current-station-name').textContent = station.name;
+            
+            // Show/hide sections
+            const perthSection = document.querySelector('#perth-departures').closest('.section');
+            const southHeader = document.getElementById('south-section-header');
+            
+            if (isPerthStyleStation(CURRENT_STATION_ID)) {
+                perthSection.style.display = 'none';
+                if (southHeader) southHeader.style.display = 'none';
+            } else {
+                perthSection.style.display = 'block';
+                if (southHeader) southHeader.style.display = 'flex';
+            }
+            
+            // Clear and refresh
+            document.getElementById('perth-departures').innerHTML = '<div class="loading">Loading departures</div>';
+            document.getElementById('south-departures').innerHTML = '<div class="loading">Loading departures</div>';
+            
+            renderFavourites();
+            updateStarButton();
+            updateAllDepartures();
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const wrapper = document.querySelector('.station-select-wrapper');
+            const dropdown = document.getElementById('station-dropdown');
+            
+            if (wrapper && !wrapper.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
 
         function saveConfig() {
             const endpoint = document.getElementById('api-endpoint').value.trim();
@@ -333,11 +1091,26 @@
         function getTimeDisplay(minutes) {
             if (minutes < 1) {
                 return { text: 'NOW', class: 'now' };
-            } else if (minutes < 5) {
+            } else if (minutes <= 5) {
                 return { text: `${minutes} min`, class: 'soon' };
+            } else if (minutes >= 20) {
+                // For trains 20+ minutes away, show both minutes and actual time
+                const now = new Date();
+                const departTime = new Date(now.getTime() + minutes * 60000);
+                const timeStr = departTime.toLocaleTimeString('en-AU', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false 
+                });
+                return { text: `${minutes} min (${timeStr})`, class: '' };
             } else {
                 return { text: `${minutes} min`, class: '' };
             }
+        }
+        
+        function cleanStops(stops) {
+            // Remove series information (e.g., "- W series", "- A series", etc.)
+            return stops.replace(/\s*-\s*[A-Z]\s+series/i, '');
         }
 
         function renderDepartures(departures, containerId) {
@@ -348,26 +1121,68 @@
                 return;
             }
 
-            container.innerHTML = departures.map(dep => {
+            const showAll = container.dataset.showAll === 'true';
+            const displayCount = showAll ? departures.length : Math.min(3, departures.length);
+            const visibleDepartures = departures.slice(0, displayCount);
+            
+            let html = visibleDepartures.map(dep => {
                 const timeInfo = getTimeDisplay(dep.minutes);
+                // Remove "Towards" from destination if present
+                const cleanDestination = dep.destination.replace(/^Towards\s+/i, '');
+                const cleanedStops = cleanStops(dep.stops);
+                
+                // Get line color for this departure
+                const rawLineName = dep.route || getLineFromDestination(dep.destination);
+                const lineName = normalizeLineName(rawLineName);
+                const lineColor = getLineColor(lineName);
+                const textColor = getLineTextColor(lineName);
+                
                 return `
                     <div class="departure-item">
-                        <div class="platform">
+                        <div class="platform" style="background: linear-gradient(135deg, ${lineColor} 0%, ${lineColor}dd 100%); color: ${textColor};">
                             <span class="platform-label">Platform</span>
                             ${dep.platform}
                         </div>
                         <div class="destination">
-                            ${dep.destination}
-                            <div class="stops">${dep.stops}</div>
-                        </div>
-                        <div class="pattern">
-                            <span class="pattern-label">Pattern</span>
-                            <span class="pattern-value">${dep.pattern}</span>
+                            ${cleanDestination}
+                            <div class="stops">${cleanedStops}</div>
                         </div>
                         <div class="time ${timeInfo.class}">${timeInfo.text}</div>
                     </div>
                 `;
             }).join('');
+            
+            // Add "show more" button if there are more than 3 departures
+            if (departures.length > 3 && !showAll) {
+                html += `
+                    <button class="show-more-btn" onclick="toggleShowMore('${containerId}')">
+                        Show ${departures.length - 3} more departures ▼
+                    </button>
+                `;
+            } else if (departures.length > 3 && showAll) {
+                html += `
+                    <button class="show-more-btn" onclick="toggleShowMore('${containerId}')">
+                        Show less ▲
+                    </button>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function toggleShowMore(containerId) {
+            const container = document.getElementById(containerId);
+            container.dataset.showAll = container.dataset.showAll === 'true' ? 'false' : 'true';
+            
+            // Re-render with the updated state
+            if (lastFetchedData) {
+                if (isPerthStyleStation(CURRENT_STATION_ID)) {
+                    handlePerthStation(lastFetchedData);
+                } else {
+                    renderDepartures(lastFetchedData.perth, 'perth-departures');
+                    renderDepartures(lastFetchedData.south, 'south-departures');
+                }
+            }
         }
 
         function showError(message) {
@@ -385,27 +1200,70 @@
             }
 
             try {
-                const response = await fetch(`${API_ENDPOINT}/api/departures`);
+                let data;
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                // For Perth Station, fetch from both Perth (127) and Perth Underground (132)
+                if (CURRENT_STATION_ID === '127') {
+                    const [response1, response2] = await Promise.all([
+                        fetch(`${API_ENDPOINT}/api/departures?station_id=127`),
+                        fetch(`${API_ENDPOINT}/api/departures?station_id=132`)
+                    ]);
+                    
+                    if (!response1.ok || !response2.ok) {
+                        throw new Error(`HTTP error! status: ${response1.status} / ${response2.status}`);
+                    }
+                    
+                    const data1 = await response1.json();
+                    const data2 = await response2.json();
+                    
+                    if (!data1.success || !data2.success) {
+                        throw new Error('API result not success');
+                    }
+                    
+                    // Combine departures from both stations
+                    data = {
+                        success: true,
+                        perth: [...(data1.perth || []), ...(data2.perth || [])],
+                        south: [...(data1.south || []), ...(data2.south || [])],
+                        station_id: '127',
+                        last_updated: data1.last_updated
+                    };
+                } else {
+                    // Normal single station fetch
+                    const response = await fetch(`${API_ENDPOINT}/api/departures?station_id=${CURRENT_STATION_ID}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
 
-                const data = await response.json();
+                    data = await response.json();
 
-                if (!data.success) {
-                    throw new Error(data.error || 'Unknown error occurred');
+                    if (!data.success) {
+                        throw new Error(data.error || 'Unknown error occurred');
+                    }
                 }
 
                 lastFetchedData = data;
                 
-                renderDepartures(data.perth, 'perth-departures');
-                renderDepartures(data.south, 'south-departures');
+                // Special handling for Perth-style stations (Perth Stn and Perth Underground)
+                if (isPerthStyleStation(CURRENT_STATION_ID)) {
+                    handlePerthStation(data);
+                } else {
+                    // Normal handling for other stations
+                    renderDepartures(data.perth, 'perth-departures');
+                    renderDepartures(data.south, 'south-departures');
+                }
 
-                // Update last updated time
-                const lastUpdated = new Date(data.last_updated);
+                // Update last updated time in Perth timezone
+                const now = new Date();
                 document.getElementById('last-updated').textContent = 
-                    `Last updated: ${lastUpdated.toLocaleTimeString()}`;
+                    `Last updated: ${now.toLocaleTimeString('en-AU', { 
+                        timeZone: 'Australia/Perth',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: true
+                    })}`;
 
             } catch (error) {
                 console.error('Error updating departures:', error);
@@ -413,26 +1271,294 @@
                 
                 // If we have cached data, keep displaying it
                 if (lastFetchedData) {
-                    renderDepartures(lastFetchedData.perth, 'perth-departures');
-                    renderDepartures(lastFetchedData.south, 'south-departures');
+                    if (isPerthStyleStation(CURRENT_STATION_ID)) {
+                        handlePerthStation(lastFetchedData);
+                    } else {
+                        renderDepartures(lastFetchedData.perth, 'perth-departures');
+                        renderDepartures(lastFetchedData.south, 'south-departures');
+                    }
                 }
+            }
+        }
+
+        function handlePerthStation(data) {
+            // Hide "To Perth" section for Perth-style stations
+            document.querySelector('#perth-departures').closest('.section').style.display = 'none';
+            
+            // Hide the "From Perth" header (but keep the board visible)
+            const southHeader = document.getElementById('south-section-header');
+            if (southHeader) {
+                southHeader.style.display = 'none';
+            }
+            
+            // Combine all departures
+            let allDepartures = [...data.perth, ...data.south];
+            
+            // Filter out Elizabeth Quay trains that are duplicates of Mandurah trains
+            // (Elizabeth Quay trains that have a Mandurah train ~3 mins later on same platform)
+            allDepartures = allDepartures.filter(dep => {
+                const dest = dep.destination.toLowerCase();
+                
+                // If this isn't an Elizabeth Quay train, keep it
+                if (!dest.includes('elizabeth quay')) {
+                    return true;
+                }
+                
+                // Check if there's a Mandurah train on the same platform within 1-5 minutes
+                const hasMandurahTwin = allDepartures.some(other => {
+                    const otherDest = other.destination.toLowerCase();
+                    const timeDiff = other.minutes - dep.minutes;
+                    
+                    return otherDest.includes('mandurah') &&
+                           dep.platform === other.platform &&
+                           timeDiff >= 1 && timeDiff <= 5;
+                });
+                
+                // If there's a Mandurah twin, filter out this Elizabeth Quay train
+                return !hasMandurahTwin;
+            });
+            
+            // Group by platform (combine 4&5 and 8&9) and track line info
+            const grouped = {};
+            allDepartures.forEach(dep => {
+                let platform = dep.platform;
+                
+                // Combine platforms 4 and 5
+                if (platform === '4' || platform === '5') {
+                    platform = '4/5';
+                }
+                // Combine platforms 8 and 9
+                if (platform === '8' || platform === '9') {
+                    platform = '8/9';
+                }
+                
+                if (!grouped[platform]) {
+                    grouped[platform] = {
+                        departures: [],
+                        lines: new Set()  // Use a Set to track unique lines
+                    };
+                }
+                
+                // Add the line name to the set (normalize it first)
+                const rawLineName = dep.route || getLineFromDestination(dep.destination);
+                const lineName = normalizeLineName(rawLineName);
+                grouped[platform].lines.add(lineName);
+                grouped[platform].departures.push(dep);
+            });
+            
+            // Sort each group by time
+            Object.keys(grouped).forEach(platform => {
+                grouped[platform].departures.sort((a, b) => a.minutes - b.minutes);
+            });
+            
+            // Render as platform sections
+            renderPerthDepartures(grouped);
+        }
+        
+        function getLineFromDestination(destination) {
+            // Fallback to determine line from destination if route info not available
+            const dest = destination.toLowerCase();
+            
+            // Check for specific destinations first (most specific to least specific)
+            if (dest.includes('mandurah') || dest.includes('elizabeth quay')) return 'Mandurah Line';
+            if (dest.includes('cockburn')) return 'Thornlie-Cockburn Line';
+            if (dest.includes('thornlie')) return 'Thornlie-Cockburn Line';
+            if (dest.includes('armadale')) return 'Armadale Line';
+            if (dest.includes('joondalup') || dest.includes('clarkson') || dest.includes('butler') || dest.includes('currambine')) return 'Yanchep Line';
+            if (dest.includes('yanchep') || dest.includes('eglinton') || dest.includes('alkimos')) return 'Yanchep Line';
+            if (dest.includes('midland')) return 'Midland Line';
+            if (dest.includes('fremantle')) return 'Fremantle Line';
+            if (dest.includes('ellenbrook')) return 'Ellenbrook Line';
+            if (dest.includes('airport')) return 'Airport Line';
+            
+            return 'Unknown Line';
+        }
+        
+        function normalizeLineName(lineName) {
+            // Normalize line names to match our standard naming
+            if (!lineName) return 'Unknown Line';
+            
+            const lower = lineName.toLowerCase();
+            if (lower.includes('yanchep') || lower.includes('joondalup')) return 'Yanchep Line';
+            if (lower.includes('thornlie') || lower.includes('cockburn')) return 'Thornlie-Cockburn Line';
+            if (lower.includes('mandurah')) return 'Mandurah Line';
+            if (lower.includes('armadale')) return 'Armadale Line';
+            if (lower.includes('fremantle')) return 'Fremantle Line';
+            if (lower.includes('midland')) return 'Midland Line';
+            if (lower.includes('ellenbrook')) return 'Ellenbrook Line';
+            if (lower.includes('airport')) return 'Airport Line';
+            
+            return lineName; // Return original if no match
+        }
+        
+        function getLineColor(lineName) {
+            // Normalize line names first
+            let normalizedName = lineName;
+            
+            // Handle variations in line naming
+            if (lineName.includes('Yanchep') || lineName.includes('Joondalup')) {
+                normalizedName = 'Yanchep Line';
+            } else if (lineName.includes('Thornlie') || lineName.includes('Cockburn')) {
+                normalizedName = 'Thornlie-Cockburn Line';
+            }
+            
+            // Return the brand color for each line
+            const lineColors = {
+                'Airport Line': '#54CAB5',
+                'Midland Line': '#9A184F',
+                'Ellenbrook Line': '#ED3123',
+                'Armadale Line': '#FFA931',
+                'Thornlie-Cockburn Line': '#A07EBF',
+                'Fremantle Line': '#0066B8',
+                'Mandurah Line': '#E36129',
+                'Yanchep Line': '#939028'
+            };
+            
+            return lineColors[normalizedName] || '#2c5f2d';  // Default green if unknown
+        }
+        
+        function getLineTextColor(lineName) {
+            // Return black text for light-colored lines, white for others
+            const normalizedName = lineName.includes('Armadale') ? 'Armadale Line' : lineName;
+            
+            // Armadale line has a bright yellow/orange color, needs black text
+            if (normalizedName === 'Armadale Line') {
+                return '#000000';
+            }
+            
+            return '#FFFFFF';  // Default white text
+        }
+
+        function renderPerthDepartures(groupedByPlatform) {
+            const container = document.getElementById('south-departures');
+            
+            if (Object.keys(groupedByPlatform).length === 0) {
+                container.innerHTML = '<div class="no-trains">No upcoming departures</div>';
+                return;
+            }
+            
+            // Sort platforms numerically (1, 2, 3, 4/5, 6, 7, 8/9)
+            const sortedPlatforms = Object.keys(groupedByPlatform).sort((a, b) => {
+                const numA = a.includes('/') ? (a === '4/5' ? 4.5 : 8.5) : parseInt(a);
+                const numB = b.includes('/') ? (b === '4/5' ? 4.5 : 8.5) : parseInt(b);
+                return numA - numB;
+            });
+            
+            let html = '';
+            
+            sortedPlatforms.forEach(platform => {
+                const platformData = groupedByPlatform[platform];
+                const departures = platformData.departures;
+                
+                // Get colors for the lines
+                const lineArray = Array.from(platformData.lines);
+                
+                // Check if this platform group should show all departures
+                const showAll = container.dataset[`showAll_${platform}`] === 'true';
+                const displayCount = showAll ? departures.length : Math.min(3, departures.length);
+                const visibleDepartures = departures.slice(0, displayCount);
+                
+                // Build header with individual colored stripes for each line
+                if (lineArray.length === 1) {
+                    // Single line - solid color with centered text
+                    const color = getLineColor(lineArray[0]);
+                    const textColor = getLineTextColor(lineArray[0]);
+                    html += `
+                        <div class="section-header" style="margin-top: 15px; background: ${color}; color: ${textColor}; justify-content: center;">
+                            <div>
+                                <span class="direction">${lineArray[0]}</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Multiple lines - create striped header with text on each stripe
+                    const stripeWidth = 100 / lineArray.length;
+                    html += `
+                        <div style="display: flex; margin-top: 15px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+                    `;
+                    lineArray.forEach(lineName => {
+                        const color = getLineColor(lineName);
+                        const textColor = getLineTextColor(lineName);
+                        html += `
+                            <div style="flex: 1; background: ${color}; color: ${textColor}; padding: 15px 10px; font-size: 1.2em; font-weight: bold; text-align: center;">
+                                ${lineName}
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+                
+                visibleDepartures.forEach(dep => {
+                    const timeInfo = getTimeDisplay(dep.minutes);
+                    const cleanDestination = dep.destination.replace(/^Towards\s+/i, '');
+                    const cleanedStops = cleanStops(dep.stops);
+                    
+                    // Get line color for this departure
+                    const rawLineName = dep.route || getLineFromDestination(dep.destination);
+                    const lineName = normalizeLineName(rawLineName);
+                    const lineColor = getLineColor(lineName);
+                    const textColor = getLineTextColor(lineName);
+                    
+                    html += `
+                        <div class="departure-item">
+                            <div class="platform" style="background: linear-gradient(135deg, ${lineColor} 0%, ${lineColor}dd 100%); color: ${textColor};">
+                                <span class="platform-label">Platform</span>
+                                ${dep.platform}
+                            </div>
+                            <div class="destination">
+                                ${cleanDestination}
+                                <div class="stops">${cleanedStops}</div>
+                            </div>
+                            <div class="time ${timeInfo.class}">${timeInfo.text}</div>
+                        </div>
+                    `;
+                });
+                
+                // Add "show more" button if there are more than 3 departures
+                if (departures.length > 3 && !showAll) {
+                    html += `
+                        <button class="show-more-btn" onclick="togglePerthShowMore('${platform}')">
+                            Show ${departures.length - 3} more departures ▼
+                        </button>
+                    `;
+                } else if (departures.length > 3 && showAll) {
+                    html += `
+                        <button class="show-more-btn" onclick="togglePerthShowMore('${platform}')">
+                            Show less ▲
+                        </button>
+                    `;
+                }
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function togglePerthShowMore(platform) {
+            const container = document.getElementById('south-departures');
+            const currentState = container.dataset[`showAll_${platform}`] === 'true';
+            container.dataset[`showAll_${platform}`] = currentState ? 'false' : 'true';
+            
+            // Re-render Perth station
+            if (lastFetchedData) {
+                handlePerthStation(lastFetchedData);
             }
         }
 
         function updateDisplayTimes() {
             // Update the time displays without fetching new data
             if (lastFetchedData) {
-                renderDepartures(lastFetchedData.perth, 'perth-departures');
-                renderDepartures(lastFetchedData.south, 'south-departures');
+                if (isPerthStyleStation(CURRENT_STATION_ID)) {
+                    handlePerthStation(lastFetchedData);
+                } else {
+                    renderDepartures(lastFetchedData.perth, 'perth-departures');
+                    renderDepartures(lastFetchedData.south, 'south-departures');
+                }
             }
         }
 
-        // Initial load
-        if (API_ENDPOINT) {
-            updateAllDepartures();
-        } else {
-            document.getElementById('config-panel').style.display = 'block';
-        }
+        // Initialize on page load
+        loadTheme();
+        init();
 
         // Refresh data every 30 seconds
         setInterval(updateAllDepartures, REFRESH_INTERVAL);

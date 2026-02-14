@@ -1464,7 +1464,8 @@
                 const lineArray = Array.from(platformData.lines);
                 
                 // Check if this platform group should show all departures
-                const showAll = container.dataset[`showAll_${platform}`] === 'true';
+                const sanitizedPlatform = platform.replace('/', '_');
+                const showAll = container.dataset[`showAll_${sanitizedPlatform}`] === 'true';
                 const displayCount = showAll ? departures.length : Math.min(3, departures.length);
                 const visibleDepartures = departures.slice(0, displayCount);
                 
@@ -1545,8 +1546,9 @@
         
         function togglePerthShowMore(platform) {
             const container = document.getElementById('south-departures');
-            const currentState = container.dataset[`showAll_${platform}`] === 'true';
-            container.dataset[`showAll_${platform}`] = currentState ? 'false' : 'true';
+            const sanitizedPlatform = platform.replace('/', '_');
+            const currentState = container.dataset[`showAll_${sanitizedPlatform}`] === 'true';
+            container.dataset[`showAll_${sanitizedPlatform}`] = currentState ? 'false' : 'true';
             
             // Re-render Perth station
             if (lastFetchedData) {

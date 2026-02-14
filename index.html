@@ -72,6 +72,14 @@
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .header h1 .title-text {
+            margin-right: 60px;
         }
         
         .theme-toggle {
@@ -290,6 +298,7 @@
         .favourite-btn.active {
             background: var(--border-color);
             border-color: var(--border-active);
+            color: white;
         }
         
         .favourite-btn .star {
@@ -551,7 +560,7 @@
             <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">
                 🌙
             </button>
-            <h1>🚆 Transperth Live Departures</h1>
+            <h1>🚆 <span class="title-text">Transperth Live Departures</span></h1>
             <a href="https://www.transperth.wa.gov.au/Service-Updates" target="_blank" class="service-updates-link">
                 Service Updates & Disruptions
             </a>

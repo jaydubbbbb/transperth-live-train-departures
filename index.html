@@ -444,7 +444,7 @@
         .loading {
             text-align: center;
             padding: 40px;
-            color: white;
+            color: var(--text-primary);
             font-size: 1.2em;
         }
 
@@ -781,6 +781,20 @@
             return stationId === '127'; // Perth Stn (includes Underground data)
         }
         
+        // Helper function to check if station is a terminus (no "From Perth" services)
+        function isTerminusStation(stationId) {
+            const terminusStations = [
+                '196', // Yanchep Stn
+                '120', // Midland Stn
+                '207', // Ellenbrook Stn
+                '100', // Fremantle Stn
+                '189', // High Wycombe Stn
+                '211', // Byford Stn
+                '114'  // Mandurah Stn
+            ];
+            return terminusStations.includes(stationId);
+        }
+        
         // Favourites management functions
         function saveFavourites() {
             localStorage.setItem('favourite_stations', JSON.stringify(FAVOURITE_STATIONS));
@@ -817,6 +831,7 @@
             
             // Show/hide sections based on station
             const perthSection = document.querySelector('#perth-departures').closest('.section');
+            const southSection = document.getElementById('south-section');
             const southHeader = document.getElementById('south-section-header');
             
             if (isPerthStyleStation(CURRENT_STATION_ID)) {
@@ -824,7 +839,13 @@
                 if (southHeader) southHeader.style.display = 'none';
             } else {
                 perthSection.style.display = 'block';
-                if (southHeader) southHeader.style.display = 'flex';
+                // Hide "From Perth" section for terminus stations
+                if (isTerminusStation(CURRENT_STATION_ID)) {
+                    southSection.style.display = 'none';
+                } else {
+                    southSection.style.display = 'block';
+                    if (southHeader) southHeader.style.display = 'flex';
+                }
             }
             
             // Clear and refresh
@@ -896,8 +917,12 @@
             
             // Check if Perth-style station on load
             const perthSection = document.querySelector('#perth-departures').closest('.section');
+            const southSection = document.getElementById('south-section');
             if (isPerthStyleStation(CURRENT_STATION_ID)) {
                 perthSection.style.display = 'none';
+            } else if (isTerminusStation(CURRENT_STATION_ID)) {
+                // Hide "From Perth" section for terminus stations
+                southSection.style.display = 'none';
             }
             
             if (API_ENDPOINT) {
@@ -1059,6 +1084,7 @@
             
             // Show/hide sections
             const perthSection = document.querySelector('#perth-departures').closest('.section');
+            const southSection = document.getElementById('south-section');
             const southHeader = document.getElementById('south-section-header');
             
             if (isPerthStyleStation(CURRENT_STATION_ID)) {
@@ -1066,7 +1092,13 @@
                 if (southHeader) southHeader.style.display = 'none';
             } else {
                 perthSection.style.display = 'block';
-                if (southHeader) southHeader.style.display = 'flex';
+                // Hide "From Perth" section for terminus stations
+                if (isTerminusStation(CURRENT_STATION_ID)) {
+                    southSection.style.display = 'none';
+                } else {
+                    southSection.style.display = 'block';
+                    if (southHeader) southHeader.style.display = 'flex';
+                }
             }
             
             // Clear and refresh

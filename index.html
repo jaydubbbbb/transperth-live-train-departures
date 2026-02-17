@@ -621,7 +621,7 @@
 
         <!-- To Perth Section -->
         <div class="section">
-            <div class="section-header">
+            <div class="section-header" id="perth-section-header">
                 <div>
                     <span class="direction">To Perth</span>
                 </div>
@@ -829,10 +829,19 @@
                 document.getElementById('current-station-name').textContent = selectedStation.name;
             }
             
+            // Reset section headers to default (will be changed by handler if needed)
+            const perthHeader = document.getElementById('perth-section-header');
+            const southHeader = document.getElementById('south-section-header');
+            if (perthHeader) {
+                perthHeader.querySelector('.direction').textContent = 'To Perth';
+            }
+            if (southHeader) {
+                southHeader.querySelector('.direction').textContent = 'From Perth';
+            }
+            
             // Show/hide sections based on station
             const perthSection = document.querySelector('#perth-departures').closest('.section');
             const southSection = document.getElementById('south-section');
-            const southHeader = document.getElementById('south-section-header');
             
             if (isPerthStyleStation(CURRENT_STATION_ID)) {
                 perthSection.style.display = 'none';
@@ -1082,10 +1091,19 @@
             document.title = `${station.name} - Live Departures`;
             document.getElementById('current-station-name').textContent = station.name;
             
+            // Reset section headers to default (will be changed by handler if needed)
+            const perthHeader = document.getElementById('perth-section-header');
+            const southHeader = document.getElementById('south-section-header');
+            if (perthHeader) {
+                perthHeader.querySelector('.direction').textContent = 'To Perth';
+            }
+            if (southHeader) {
+                southHeader.querySelector('.direction').textContent = 'From Perth';
+            }
+            
             // Show/hide sections
             const perthSection = document.querySelector('#perth-departures').closest('.section');
             const southSection = document.getElementById('south-section');
-            const southHeader = document.getElementById('south-section-header');
             
             if (isPerthStyleStation(CURRENT_STATION_ID)) {
                 perthSection.style.display = 'none';
@@ -1229,6 +1247,8 @@
             if (lastFetchedData) {
                 if (isPerthStyleStation(CURRENT_STATION_ID)) {
                     handlePerthStation(lastFetchedData);
+                } else if (CURRENT_STATION_ID === '177') {
+                    handleElizabethQuayStation(lastFetchedData);
                 } else {
                     renderDepartures(lastFetchedData.perth, 'perth-departures');
                     renderDepartures(lastFetchedData.south, 'south-departures');
@@ -1299,6 +1319,9 @@
                 // Special handling for Perth-style stations (Perth Stn and Perth Underground)
                 if (isPerthStyleStation(CURRENT_STATION_ID)) {
                     handlePerthStation(data);
+                } else if (CURRENT_STATION_ID === '177') {
+                    // Special handling for Elizabeth Quay
+                    handleElizabethQuayStation(data);
                 } else {
                     // Normal handling for other stations
                     renderDepartures(data.perth, 'perth-departures');
@@ -1324,6 +1347,8 @@
                 if (lastFetchedData) {
                     if (isPerthStyleStation(CURRENT_STATION_ID)) {
                         handlePerthStation(lastFetchedData);
+                    } else if (CURRENT_STATION_ID === '177') {
+                        handleElizabethQuayStation(lastFetchedData);
                     } else {
                         renderDepartures(lastFetchedData.perth, 'perth-departures');
                         renderDepartures(lastFetchedData.south, 'south-departures');
@@ -1404,6 +1429,101 @@
             
             // Render as platform sections
             renderPerthDepartures(grouped);
+        }
+        
+        function handleElizabethQuayStation(data) {
+            // Special handling for Elizabeth Quay
+            // Show sections with custom headers: "To Perth/Yanchep" and "From Perth"
+            
+            document.querySelector('#perth-departures').closest('.section').style.display = 'block';
+            const southHeader = document.getElementById('south-section-header');
+            if (southHeader) {
+                southHeader.style.display = 'flex';
+                // Change header text for Elizabeth Quay
+                document.querySelector('#perth-section-header .direction').textContent = 'To Perth/Yanchep';
+                southHeader.querySelector('.direction').textContent = 'From Perth';
+            }
+            
+            // Combine all departures for filtering
+            let allDepartures = [...data.perth, ...data.south];
+            
+            // Filter duplicates: If same fleet number and within 3 minutes, keep only the one going farther
+            const deduplicated = [];
+            const processed = new Set();
+            
+            allDepartures.sort((a, b) => a.minutes - b.minutes); // Sort by time first
+            
+            allDepartures.forEach(dep => {
+                if (!dep.fleet_number || processed.has(dep.fleet_number)) {
+                    if (!processed.has(dep.fleet_number)) {
+                        deduplicated.push(dep);
+                    }
+                    return;
+                }
+                
+                // Find potential duplicate: same fleet, similar time
+                const duplicate = allDepartures.find(other => 
+                    other.fleet_number === dep.fleet_number &&
+                    other !== dep &&
+                    Math.abs(other.minutes - dep.minutes) <= 3
+                );
+                
+                if (duplicate) {
+                    // Keep the one going farther (not to Elizabeth Quay)
+                    const depDest = dep.destination.toLowerCase();
+                    const dupDest = duplicate.destination.toLowerCase();
+                    
+                    if (!depDest.includes('elizabeth quay') && dupDest.includes('elizabeth quay')) {
+                        // Keep dep, skip duplicate
+                        deduplicated.push(dep);
+                        processed.add(dep.fleet_number);
+                    } else if (depDest.includes('elizabeth quay') && !dupDest.includes('elizabeth quay')) {
+                        // Skip dep, mark fleet as processed
+                        processed.add(dep.fleet_number);
+                    } else {
+                        // Both same destination type, keep first one
+                        deduplicated.push(dep);
+                        processed.add(dep.fleet_number);
+                    }
+                } else {
+                    deduplicated.push(dep);
+                    processed.add(dep.fleet_number);
+                }
+            });
+            
+            // Now split into "To Perth/Yanchep" and "From Perth"
+            // To Perth/Yanchep: trains heading north (direction 0) OR Yanchep Line trains (direction 1)
+            // From Perth: Mandurah Line trains heading south (direction 1)
+            
+            const toPerth = deduplicated.filter(dep => {
+                const route = (dep.route || '').toLowerCase();
+                const dest = dep.destination.toLowerCase();
+                
+                // Direction 0 = towards Perth
+                if (dep.direction === '0') return true;
+                
+                // Direction 1 but on Yanchep Line = still "to Perth/Yanchep"
+                if (dep.direction === '1' && (route.includes('yanchep') || route.includes('joondalup'))) {
+                    return true;
+                }
+                
+                return false;
+            });
+            
+            const fromPerth = deduplicated.filter(dep => {
+                const route = (dep.route || '').toLowerCase();
+                
+                // Direction 1 on Mandurah Line = away from Perth
+                if (dep.direction === '1' && (route.includes('mandurah') || route.includes('cockburn'))) {
+                    return true;
+                }
+                
+                return false;
+            });
+            
+            // Render both sections
+            renderDepartures(toPerth, 'perth-departures');
+            renderDepartures(fromPerth, 'south-departures');
         }
         
         function getLineFromDestination(destination) {
@@ -1600,6 +1720,8 @@
             if (lastFetchedData) {
                 if (isPerthStyleStation(CURRENT_STATION_ID)) {
                     handlePerthStation(lastFetchedData);
+                } else if (CURRENT_STATION_ID === '177') {
+                    handleElizabethQuayStation(lastFetchedData);
                 } else {
                     renderDepartures(lastFetchedData.perth, 'perth-departures');
                     renderDepartures(lastFetchedData.south, 'south-departures');

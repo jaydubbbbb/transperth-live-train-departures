@@ -1444,6 +1444,9 @@
             // Combine all departures for filtering
             let allDepartures = [...data.perth, ...data.south];
             
+            // Sort all departures by time first (earliest first)
+            allDepartures.sort((a, b) => a.minutes - b.minutes);
+            
             // Filter out Perth Underground trains that are duplicates of longer Yanchep Line trains
             // At EQ, the same train appears as both "Towards Perth Underground" and "Towards Yanchep/Clarkson/etc"
             allDepartures = allDepartures.filter(dep => {

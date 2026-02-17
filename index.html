@@ -614,7 +614,7 @@
         
         <!-- Current Station Indicator -->
         <div class="current-station-indicator" id="current-station-indicator">
-            Showing departures for: <span class="station-name" id="current-station-name">Queens Park Stn</span>
+            Showing departures for: <span class="station-name" id="current-station-name">Queens Park</span>
         </div>
 
         <div id="error-container"></div>
@@ -651,90 +651,90 @@
     <script>
         // All Transperth Stations
         const STATIONS = [
-            { id: '188', name: 'Airport Central Stn' },
-            { id: '194', name: 'Alkimos Stn' },
-            { id: '73', name: 'Armadale Stn' },
-            { id: '74', name: 'Ashfield Stn' },
-            { id: '180', name: 'Aubin Grove Stn' },
-            { id: '204', name: 'Ballajura Stn' },
-            { id: '75', name: 'Bassendean Stn' },
-            { id: '76', name: 'Bayswater Stn' },
-            { id: '77', name: 'Beckenham Stn' },
-            { id: '79', name: 'Bull Creek Stn' },
-            { id: '80', name: 'Burswood Stn' },
-            { id: '175', name: 'Butler Stn' },
-            { id: '211', name: 'Byford Stn' },
-            { id: '81', name: 'Canning Bridge Stn' },
-            { id: '82', name: 'Cannington Stn' },
-            { id: '84', name: 'Carlisle Stn' },
-            { id: '85', name: 'Challis Stn' },
-            { id: '86', name: 'City West Stn' },
-            { id: '87', name: 'Claisebrook Stn' },
-            { id: '90', name: 'Claremont Stn' },
-            { id: '91', name: 'Clarkson Stn' },
-            { id: '92', name: 'Cockburn Central Stn' },
-            { id: '93', name: 'Cottesloe Stn' },
-            { id: '94', name: 'Currambine Stn' },
-            { id: '95', name: 'Daglish Stn' },
-            { id: '96', name: 'East Guildford Stn' },
-            { id: '97', name: 'East Perth Stn' },
-            { id: '98', name: 'Edgewater Stn' },
-            { id: '195', name: 'Eglinton Stn' },
-            { id: '177', name: 'Elizabeth Quay Stn' },
-            { id: '207', name: 'Ellenbrook Stn' },
-            { id: '100', name: 'Fremantle Stn' },
-            { id: '101', name: 'Glendalough Stn' },
-            { id: '102', name: 'Gosnells Stn' },
-            { id: '103', name: 'Grant Street Stn' },
-            { id: '104', name: 'Greenwood Stn' },
-            { id: '105', name: 'Guildford Stn' },
-            { id: '189', name: 'High Wycombe Stn' },
-            { id: '106', name: 'Joondalup Stn' },
-            { id: '107', name: 'Karrakatta Stn' },
-            { id: '108', name: 'Kelmscott Stn' },
-            { id: '109', name: 'Kenwick Stn' },
-            { id: '110', name: 'Kwinana Stn' },
-            { id: '193', name: 'Lakelands Stn' },
-            { id: '111', name: 'Leederville Stn' },
-            { id: '112', name: 'Loch Street Stn' },
-            { id: '113', name: 'Maddington Stn' },
-            { id: '114', name: 'Mandurah Stn' },
-            { id: '115', name: 'Maylands Stn' },
-            { id: '116', name: 'McIver Stn' },
-            { id: '119', name: 'Meltham Stn' },
-            { id: '120', name: 'Midland Stn' },
-            { id: '203', name: 'Morley Stn' },
-            { id: '121', name: 'Mosman Park Stn' },
-            { id: '122', name: 'Mt Lawley Stn' },
-            { id: '123', name: 'Murdoch Stn' },
-            { id: '210', name: 'Nicholson Road Stn' },
-            { id: '199', name: 'Noranda Stn' },
-            { id: '124', name: 'North Fremantle Stn' },
-            { id: '125', name: 'Oats Street Stn' },
-            { id: '182', name: 'Perth Stadium Stn' },
-            { id: '127', name: 'Perth Stn' },
-            { id: '133', name: 'Queens Park Stn' },
-            { id: '209', name: 'Ranford Road Stn' },
-            { id: '187', name: 'Redcliffe Stn' },
-            { id: '134', name: 'Rockingham Stn' },
-            { id: '135', name: 'Seaforth Stn' },
-            { id: '136', name: 'Shenton Park Stn' },
-            { id: '137', name: 'Sherwood Stn' },
-            { id: '139', name: 'Stirling Stn' },
-            { id: '140', name: 'Subiaco Stn' },
-            { id: '141', name: 'Success Hill Stn' },
-            { id: '142', name: 'Swanbourne Stn' },
-            { id: '143', name: 'Thornlie Stn' },
-            { id: '144', name: 'Victoria Park Stn' },
-            { id: '145', name: 'Victoria Street Stn' },
-            { id: '146', name: 'Warnbro Stn' },
-            { id: '147', name: 'Warwick Stn' },
-            { id: '148', name: 'Wellard Stn' },
-            { id: '150', name: 'West Leederville Stn' },
-            { id: '205', name: 'Whiteman Park Stn' },
-            { id: '151', name: 'Whitfords Stn' },
-            { id: '152', name: 'Woodbridge Stn' },
-            { id: '196', name: 'Yanchep Stn' }
+            { id: '188', name: 'Airport Central' },
+            { id: '194', name: 'Alkimos' },
+            { id: '73', name: 'Armadale' },
+            { id: '74', name: 'Ashfield' },
+            { id: '180', name: 'Aubin Grove' },
+            { id: '204', name: 'Ballajura' },
+            { id: '75', name: 'Bassendean' },
+            { id: '76', name: 'Bayswater' },
+            { id: '77', name: 'Beckenham' },
+            { id: '79', name: 'Bull Creek' },
+            { id: '80', name: 'Burswood' },
+            { id: '175', name: 'Butler' },
+            { id: '211', name: 'Byford' },
+            { id: '81', name: 'Canning Bridge' },
+            { id: '82', name: 'Cannington' },
+            { id: '84', name: 'Carlisle' },
+            { id: '85', name: 'Challis' },
+            { id: '86', name: 'City West' },
+            { id: '87', name: 'Claisebrook' },
+            { id: '90', name: 'Claremont' },
+            { id: '91', name: 'Clarkson' },
+            { id: '92', name: 'Cockburn Central' },
+            { id: '93', name: 'Cottesloe' },
+            { id: '94', name: 'Currambine' },
+            { id: '95', name: 'Daglish' },
+            { id: '96', name: 'East Guildford' },
+            { id: '97', name: 'East Perth' },
+            { id: '98', name: 'Edgewater' },
+            { id: '195', name: 'Eglinton' },
+            { id: '177', name: 'Elizabeth Quay' },
+            { id: '207', name: 'Ellenbrook' },
+            { id: '100', name: 'Fremantle' },
+            { id: '101', name: 'Glendalough' },
+            { id: '102', name: 'Gosnells' },
+            { id: '103', name: 'Grant Street' },
+            { id: '104', name: 'Greenwood' },
+            { id: '105', name: 'Guildford' },
+            { id: '189', name: 'High Wycombe' },
+            { id: '106', name: 'Joondalup' },
+            { id: '107', name: 'Karrakatta' },
+            { id: '108', name: 'Kelmscott' },
+            { id: '109', name: 'Kenwick' },
+            { id: '110', name: 'Kwinana' },
+            { id: '193', name: 'Lakelands' },
+            { id: '111', name: 'Leederville' },
+            { id: '112', name: 'Loch Street' },
+            { id: '113', name: 'Maddington' },
+            { id: '114', name: 'Mandurah' },
+            { id: '115', name: 'Maylands' },
+            { id: '116', name: 'McIver' },
+            { id: '119', name: 'Meltham' },
+            { id: '120', name: 'Midland' },
+            { id: '203', name: 'Morley' },
+            { id: '121', name: 'Mosman Park' },
+            { id: '122', name: 'Mt Lawley' },
+            { id: '123', name: 'Murdoch' },
+            { id: '210', name: 'Nicholson Road' },
+            { id: '199', name: 'Noranda' },
+            { id: '124', name: 'North Fremantle' },
+            { id: '125', name: 'Oats Street' },
+            { id: '182', name: 'Perth Stadium' },
+            { id: '127', name: 'Perth' },
+            { id: '133', name: 'Queens Park' },
+            { id: '209', name: 'Ranford Road' },
+            { id: '187', name: 'Redcliffe' },
+            { id: '134', name: 'Rockingham' },
+            { id: '135', name: 'Seaforth' },
+            { id: '136', name: 'Shenton Park' },
+            { id: '137', name: 'Sherwood' },
+            { id: '139', name: 'Stirling' },
+            { id: '140', name: 'Subiaco' },
+            { id: '141', name: 'Success Hill' },
+            { id: '142', name: 'Swanbourne' },
+            { id: '143', name: 'Thornlie' },
+            { id: '144', name: 'Victoria Park' },
+            { id: '145', name: 'Victoria Street' },
+            { id: '146', name: 'Warnbro' },
+            { id: '147', name: 'Warwick' },
+            { id: '148', name: 'Wellard' },
+            { id: '150', name: 'West Leederville' },
+            { id: '205', name: 'Whiteman Park' },
+            { id: '151', name: 'Whitfords' },
+            { id: '152', name: 'Woodbridge' },
+            { id: '196', name: 'Yanchep' }
         ];
 
         // Configuration
@@ -778,19 +778,19 @@
         
         // Helper function to check if station uses Perth format
         function isPerthStyleStation(stationId) {
-            return stationId === '127'; // Perth Stn (includes Underground data)
+            return stationId === '127'; // Perth (includes Underground data)
         }
         
         // Helper function to check if station is a terminus (no "From Perth" services)
         function isTerminusStation(stationId) {
             const terminusStations = [
-                '196', // Yanchep Stn
-                '120', // Midland Stn
-                '207', // Ellenbrook Stn
-                '100', // Fremantle Stn
-                '189', // High Wycombe Stn
-                '211', // Byford Stn
-                '114'  // Mandurah Stn
+                '196', // Yanchep
+                '120', // Midland
+                '207', // Ellenbrook
+                '100', // Fremantle
+                '189', // High Wycombe
+                '211', // Byford
+                '114'  // Mandurah
             ];
             return terminusStations.includes(stationId);
         }
@@ -880,13 +880,10 @@
                 
                 const isActive = stationId === CURRENT_STATION_ID;
                 
-                // Remove " Stn" suffix for compact display
-                const displayName = station.name.replace(/\s+Stn$/i, '');
-                
                 return `
                     <button class="favourite-btn ${isActive ? 'active' : ''}" onclick="switchToFavourite('${stationId}')">
                         <span class="star">★</span>
-                        ${displayName}
+                        ${station.name}
                     </button>
                 `;
             }).join('');
@@ -1316,7 +1313,7 @@
 
                 lastFetchedData = data;
                 
-                // Special handling for Perth-style stations (Perth Stn and Perth Underground)
+                // Special handling for Perth-style stations (Perth and Perth Underground)
                 if (isPerthStyleStation(CURRENT_STATION_ID)) {
                     handlePerthStation(data);
                 } else if (CURRENT_STATION_ID === '177') {
@@ -1380,14 +1377,14 @@
                     return true;
                 }
                 
-                // Check if there's a Mandurah train on the same platform within 1-5 minutes
+                // Check if there's a Mandurah train on the same platform within 0-4 minutes
                 const hasMandurahTwin = allDepartures.some(other => {
                     const otherDest = other.destination.toLowerCase();
                     const timeDiff = other.minutes - dep.minutes;
                     
                     return otherDest.includes('mandurah') &&
                            dep.platform === other.platform &&
-                           timeDiff >= 1 && timeDiff <= 5;
+                           timeDiff >= 0 && timeDiff <= 4;
                 });
                 
                 // If there's a Mandurah twin, filter out this Elizabeth Quay train
@@ -1447,55 +1444,45 @@
             // Combine all departures for filtering
             let allDepartures = [...data.perth, ...data.south];
             
-            // Filter duplicates: If same fleet number and within 3 minutes, keep only the one going farther
-            const deduplicated = [];
-            const processed = new Set();
-            
-            allDepartures.sort((a, b) => a.minutes - b.minutes); // Sort by time first
-            
-            allDepartures.forEach(dep => {
-                if (!dep.fleet_number || processed.has(dep.fleet_number)) {
-                    if (!processed.has(dep.fleet_number)) {
-                        deduplicated.push(dep);
-                    }
-                    return;
+            // Filter out Perth Underground trains that are duplicates of longer Yanchep Line trains
+            // At EQ, the same train appears as both "Towards Perth Underground" and "Towards Yanchep/Clarkson/etc"
+            allDepartures = allDepartures.filter(dep => {
+                const dest = dep.destination.toLowerCase();
+                
+                // If this isn't a Perth Underground train, keep it
+                if (!dest.includes('perth underground') && !dest.includes('perth stn')) {
+                    return true;
                 }
                 
-                // Find potential duplicate: same fleet, similar time
-                const duplicate = allDepartures.find(other => 
-                    other.fleet_number === dep.fleet_number &&
-                    other !== dep &&
-                    Math.abs(other.minutes - dep.minutes) <= 3
-                );
-                
-                if (duplicate) {
-                    // Keep the one going farther (not to Elizabeth Quay)
-                    const depDest = dep.destination.toLowerCase();
-                    const dupDest = duplicate.destination.toLowerCase();
+                // Check if there's a longer Yanchep Line train on the same platform within 0-4 minutes
+                const hasLongerTwin = allDepartures.some(other => {
+                    const otherDest = other.destination.toLowerCase();
+                    const timeDiff = other.minutes - dep.minutes;
                     
-                    if (!depDest.includes('elizabeth quay') && dupDest.includes('elizabeth quay')) {
-                        // Keep dep, skip duplicate
-                        deduplicated.push(dep);
-                        processed.add(dep.fleet_number);
-                    } else if (depDest.includes('elizabeth quay') && !dupDest.includes('elizabeth quay')) {
-                        // Skip dep, mark fleet as processed
-                        processed.add(dep.fleet_number);
-                    } else {
-                        // Both same destination type, keep first one
-                        deduplicated.push(dep);
-                        processed.add(dep.fleet_number);
-                    }
-                } else {
-                    deduplicated.push(dep);
-                    processed.add(dep.fleet_number);
-                }
+                    // Check if it's a Yanchep Line train going farther (Yanchep, Clarkson, Butler, Joondalup, etc.)
+                    const isLongerYanchepTrain = (
+                        otherDest.includes('yanchep') ||
+                        otherDest.includes('clarkson') ||
+                        otherDest.includes('butler') ||
+                        otherDest.includes('joondalup') ||
+                        otherDest.includes('currambine') ||
+                        otherDest.includes('whitfords')
+                    );
+                    
+                    return isLongerYanchepTrain &&
+                           dep.platform === other.platform &&
+                           timeDiff >= 0 && timeDiff <= 4;
+                });
+                
+                // If there's a longer Yanchep Line twin, filter out this Perth Underground train
+                return !hasLongerTwin;
             });
             
             // Now split into "To Perth/Yanchep" and "From Perth"
             // To Perth/Yanchep: trains heading north (direction 0) OR Yanchep Line trains (direction 1)
             // From Perth: Mandurah Line trains heading south (direction 1)
             
-            const toPerth = deduplicated.filter(dep => {
+            const toPerth = allDepartures.filter(dep => {
                 const route = (dep.route || '').toLowerCase();
                 const dest = dep.destination.toLowerCase();
                 
@@ -1510,7 +1497,7 @@
                 return false;
             });
             
-            const fromPerth = deduplicated.filter(dep => {
+            const fromPerth = allDepartures.filter(dep => {
                 const route = (dep.route || '').toLowerCase();
                 
                 // Direction 1 on Mandurah Line = away from Perth

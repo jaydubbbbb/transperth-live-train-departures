@@ -614,7 +614,7 @@
         
         <!-- Current Station Indicator -->
         <div class="current-station-indicator" id="current-station-indicator">
-            Showing departures for: <span class="station-name" id="current-station-name">Queens Park</span>
+            Showing departures for: <span class="station-name" id="current-station-name">Perth</span>
         </div>
 
         <div id="error-container"></div>
@@ -740,9 +740,11 @@
         // Configuration
         const REFRESH_INTERVAL = 35000; // 35 seconds
         const UPDATE_DISPLAY_INTERVAL = 10000; // 10 seconds
+        const MIN_FETCH_INTERVAL = 15000; // 15 seconds - rate limit for manual refreshes
         let API_ENDPOINT = localStorage.getItem('api_endpoint') || '';
         let CURRENT_STATION_ID = localStorage.getItem('station_id') || '127'; // Default Perth
         let lastFetchedData = null;
+        let lastFetchTime = 0; // Track last fetch time for rate limiting
         let FAVOURITE_STATIONS = JSON.parse(localStorage.getItem('favourite_stations') || '[]');
         let isSearching = false;  // Track if user is actively searching
         
@@ -1266,6 +1268,20 @@
                 document.getElementById('config-panel').style.display = 'block';
                 return;
             }
+
+            // Rate limiting: Don't fetch if we fetched less than 15 seconds ago
+            const now = Date.now();
+            const timeSinceLastFetch = now - lastFetchTime;
+            
+            if (timeSinceLastFetch < MIN_FETCH_INTERVAL && lastFetchedData) {
+                console.log(`Rate limited: Only ${Math.round(timeSinceLastFetch/1000)}s since last fetch. Using cached data.`);
+                // Update display with existing cached data
+                updateDisplayTimes();
+                return;
+            }
+            
+            // Mark fetch time BEFORE making request (prevents race conditions)
+            lastFetchTime = now;
 
             try {
                 let data;

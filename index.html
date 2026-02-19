@@ -745,6 +745,7 @@
         let CURRENT_STATION_ID = localStorage.getItem('station_id') || '127'; // Default Perth
         let lastFetchedData = null;
         let lastFetchTime = 0; // Track last fetch time for rate limiting
+        const stationCache = {}; // Per-station cache: { stationId: { data, fetchTime } }
         let FAVOURITE_STATIONS = JSON.parse(localStorage.getItem('favourite_stations') || '[]');
         let isSearching = false;  // Track if user is actively searching
         
@@ -1269,19 +1270,20 @@
                 return;
             }
 
-            // Rate limiting: Don't fetch if we fetched less than 15 seconds ago
+            // Per-station rate limiting: reuse cached data if this station was fetched recently
             const now = Date.now();
-            const timeSinceLastFetch = now - lastFetchTime;
+            const cached = stationCache[CURRENT_STATION_ID];
             
-            if (timeSinceLastFetch < MIN_FETCH_INTERVAL && lastFetchedData) {
-                console.log(`Rate limited: Only ${Math.round(timeSinceLastFetch/1000)}s since last fetch. Using cached data.`);
-                // Update display with existing cached data
+            if (cached && (now - cached.fetchTime) < MIN_FETCH_INTERVAL) {
+                console.log(`Rate limited: Station ${CURRENT_STATION_ID} fetched ${Math.round((now - cached.fetchTime)/1000)}s ago. Using cached data.`);
+                lastFetchedData = cached.data;
                 updateDisplayTimes();
                 return;
             }
             
             // Mark fetch time BEFORE making request (prevents race conditions)
-            lastFetchTime = now;
+            if (!stationCache[CURRENT_STATION_ID]) stationCache[CURRENT_STATION_ID] = {};
+            stationCache[CURRENT_STATION_ID].fetchTime = now;
 
             try {
                 let data;
@@ -1328,6 +1330,7 @@
                 }
 
                 lastFetchedData = data;
+                stationCache[CURRENT_STATION_ID] = { data, fetchTime: stationCache[CURRENT_STATION_ID]?.fetchTime || Date.now() };
                 
                 // Special handling for Perth-style stations (Perth and Perth Underground)
                 if (isPerthStyleStation(CURRENT_STATION_ID)) {

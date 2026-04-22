@@ -431,6 +431,14 @@
             color: #f44336;
             animation: pulse 1s infinite;
         }
+        
+        .time-clock {
+            display: block;
+            font-size: 0.8em;
+            font-weight: normal;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
@@ -497,6 +505,63 @@
         
         .show-more-btn:active {
             background: var(--bg-primary);
+        }
+        
+        /* Perth platform quick-nav */
+        .platform-nav {
+            display: none; /* shown only for Perth */
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-primary);
+            border-bottom: 2px solid var(--border-color);
+            padding: 8px 10px;
+            flex-direction: column;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        
+        .platform-nav.visible {
+            display: flex;
+        }
+        
+        .platform-nav-label {
+            color: var(--text-primary);
+            font-size: 1.2em;
+            white-space: nowrap;
+        }
+        
+        .platform-nav-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: nowrap;
+        }
+        
+        .platform-nav-btn {
+            border: none;
+            padding: 10px 0;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+            white-space: nowrap;
+            transition: opacity 0.2s, transform 0.1s;
+            color: white;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .platform-nav-btn:hover {
+            opacity: 0.85;
+            transform: translateY(-1px);
+        }
+        
+        .platform-nav-btn:active {
+            transform: translateY(0);
+        }
+        
+        .platform-nav-btn.tricolor {
+            background: linear-gradient(to bottom, #54CAB5 33%, #9A184F 33%, #9A184F 66%, #ED3123 66%);
         }
 
         .config-panel {
@@ -611,6 +676,19 @@
         <!-- Current Station Indicator -->
         <div class="current-station-indicator" id="current-station-indicator">
             Showing departures for: <span class="station-name" id="current-station-name">Perth</span>
+        </div>
+        
+        <!-- Perth Platform Quick Nav (sticky, Perth only) -->
+        <div class="platform-nav" id="platform-nav">
+            <span class="platform-nav-label">Jump to Platform:</span>
+            <div class="platform-nav-buttons">
+                <button class="platform-nav-btn" style="background:#939028;" onclick="jumpToPlatform('1')">1</button>
+                <button class="platform-nav-btn" style="background:#E36129;" onclick="jumpToPlatform('2')">2</button>
+                <button class="platform-nav-btn" style="background:#FFA931; color:#000;" onclick="jumpToPlatform('4')">4</button>
+                <button class="platform-nav-btn" style="background:#A07EBF;" onclick="jumpToPlatform('5')">5</button>
+                <button class="platform-nav-btn" style="background:#0066B8;" onclick="jumpToPlatform('7')">7</button>
+                <button class="platform-nav-btn tricolor" onclick="jumpToPlatform('8')">8/9</button>
+            </div>
         </div>
 
         <div id="error-container"></div>
@@ -794,6 +872,11 @@
             return terminusStations.includes(stationId);
         }
         
+        // Helper function to check if station needs split platform rendering (McIver, Claisebrook)
+        function isSplitPlatformStation(stationId) {
+            return stationId === '116' || stationId === '87'; // McIver, Claisebrook
+        }
+        
         // Favourites management functions
         function saveFavourites() {
             localStorage.setItem('favourite_stations', JSON.stringify(FAVOURITE_STATIONS));
@@ -845,6 +928,10 @@
             if (isPerthStyleStation(CURRENT_STATION_ID)) {
                 perthSection.style.display = 'none';
                 if (southHeader) southHeader.style.display = 'none';
+            } else if (isSplitPlatformStation(CURRENT_STATION_ID)) {
+                perthSection.style.display = 'block';
+                southSection.style.display = 'block';
+                if (southHeader) southHeader.style.display = 'flex';
             } else {
                 perthSection.style.display = 'block';
                 // Hide "From Perth" section for terminus stations
@@ -854,6 +941,13 @@
                     southSection.style.display = 'block';
                     if (southHeader) southHeader.style.display = 'flex';
                 }
+            }
+            
+            // Show/hide Perth platform nav
+            if (isPerthStyleStation(CURRENT_STATION_ID)) {
+                document.getElementById('platform-nav').classList.add('visible');
+            } else {
+                document.getElementById('platform-nav').classList.remove('visible');
             }
             
             // Clear and refresh
@@ -925,6 +1019,7 @@
             const southSection = document.getElementById('south-section');
             if (isPerthStyleStation(CURRENT_STATION_ID)) {
                 perthSection.style.display = 'none';
+                document.getElementById('platform-nav').classList.add('visible');
             } else if (isTerminusStation(CURRENT_STATION_ID)) {
                 // Hide "From Perth" section for terminus stations
                 southSection.style.display = 'none';
@@ -1104,6 +1199,11 @@
             if (isPerthStyleStation(CURRENT_STATION_ID)) {
                 perthSection.style.display = 'none';
                 if (southHeader) southHeader.style.display = 'none';
+            } else if (isSplitPlatformStation(CURRENT_STATION_ID)) {
+                // Split-platform stations show both sections (handler sets headers)
+                perthSection.style.display = 'block';
+                southSection.style.display = 'block';
+                if (southHeader) southHeader.style.display = 'flex';
             } else {
                 perthSection.style.display = 'block';
                 // Hide "From Perth" section for terminus stations
@@ -1113,6 +1213,13 @@
                     southSection.style.display = 'block';
                     if (southHeader) southHeader.style.display = 'flex';
                 }
+            }
+            
+            // Show/hide Perth platform nav
+            if (isPerthStyleStation(CURRENT_STATION_ID)) {
+                document.getElementById('platform-nav').classList.add('visible');
+            } else {
+                document.getElementById('platform-nav').classList.remove('visible');
             }
             
             // Clear and refresh
@@ -1147,20 +1254,19 @@
         function getTimeDisplay(minutes) {
             if (minutes < 1) {
                 return { text: 'NOW', class: 'now' };
-            } else if (minutes <= 5) {
-                return { text: `${minutes} min`, class: 'soon' };
-            } else if (minutes >= 20) {
-                // For trains 20+ minutes away, show both minutes and actual time
-                const now = new Date();
-                const departTime = new Date(now.getTime() + minutes * 60000);
-                const timeStr = departTime.toLocaleTimeString('en-AU', { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    hour12: false 
-                });
-                return { text: `${minutes} min (${timeStr})`, class: '' };
+            }
+            const now = new Date();
+            const departTime = new Date(now.getTime() + minutes * 60000);
+            const timeStr = departTime.toLocaleTimeString('en-AU', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false 
+            });
+            const clockHtml = `<span class="time-clock">${timeStr}</span>`;
+            if (minutes <= 5) {
+                return { text: `${minutes} min${clockHtml}`, class: 'soon' };
             } else {
-                return { text: `${minutes} min`, class: '' };
+                return { text: `${minutes} min${clockHtml}`, class: '' };
             }
         }
         
@@ -1245,6 +1351,8 @@
                     handlePerthStation(lastFetchedData);
                 } else if (CURRENT_STATION_ID === '177') {
                     handleElizabethQuayStation(lastFetchedData);
+                } else if (isSplitPlatformStation(CURRENT_STATION_ID)) {
+                    handleSplitPlatformStation(lastFetchedData);
                 } else {
                     renderDepartures(lastFetchedData.perth, 'perth-departures');
                     renderDepartures(lastFetchedData.south, 'south-departures');
@@ -1334,6 +1442,9 @@
                 } else if (CURRENT_STATION_ID === '177') {
                     // Special handling for Elizabeth Quay
                     handleElizabethQuayStation(data);
+                } else if (isSplitPlatformStation(CURRENT_STATION_ID)) {
+                    // Special handling for McIver and Claisebrook
+                    handleSplitPlatformStation(data);
                 } else {
                     // Normal handling for other stations
                     renderDepartures(data.perth, 'perth-departures');
@@ -1361,11 +1472,118 @@
                         handlePerthStation(lastFetchedData);
                     } else if (CURRENT_STATION_ID === '177') {
                         handleElizabethQuayStation(lastFetchedData);
+                    } else if (isSplitPlatformStation(CURRENT_STATION_ID)) {
+                        handleSplitPlatformStation(lastFetchedData);
                     } else {
                         renderDepartures(lastFetchedData.perth, 'perth-departures');
                         renderDepartures(lastFetchedData.south, 'south-departures');
                     }
                 }
+            }
+        }
+
+        function handleSplitPlatformStation(data) {
+            // McIver and Claisebrook: three sections
+            // 1. Perth direction (all platforms, direction towards Perth)
+            // 2. Cockburn/Byford direction (Platform 2, away from Perth)
+            // 3. Airport/Ellenbrook/Midland direction (Platform 4, away from Perth)
+            
+            const perthSection = document.querySelector('#perth-departures').closest('.section');
+            const southSection = document.getElementById('south-section');
+            const perthHeader = document.getElementById('perth-section-header');
+            const southHeader = document.getElementById('south-section-header');
+            
+            perthSection.style.display = 'block';
+            southSection.style.display = 'block';
+            if (perthHeader) {
+                perthHeader.style.display = 'flex';
+                perthHeader.querySelector('.direction').textContent = 'Perth direction';
+            }
+            if (southHeader) {
+                southHeader.style.display = 'none'; // We render custom headers inside south-departures
+            }
+
+            // Hide Perth nav
+            document.getElementById('platform-nav').classList.remove('visible');
+            
+            const allDepartures = [...(data.perth || []), ...(data.south || [])];
+            
+            // Section 1: towards Perth (direction 0)
+            const toPerth = allDepartures.filter(dep => dep.direction === '0' || dep.direction === 0);
+            toPerth.sort((a, b) => a.minutes - b.minutes);
+            renderDepartures(toPerth, 'perth-departures');
+            
+            // Sections 2 & 3: away from Perth, split by platform
+            const awayFromPerth = allDepartures.filter(dep => dep.direction === '1' || dep.direction === 1);
+            const platform2 = awayFromPerth.filter(dep => dep.platform === '2');
+            const platform4 = awayFromPerth.filter(dep => dep.platform === '4');
+            platform2.sort((a, b) => a.minutes - b.minutes);
+            platform4.sort((a, b) => a.minutes - b.minutes);
+            
+            // Render into south-departures as two sub-sections
+            const southContainer = document.getElementById('south-departures');
+            
+            function buildSplitSection(departures, title, lineColor, textColor, containerId) {
+                const showAll = southContainer.dataset[`showAll_${containerId}`] === 'true';
+                const displayCount = showAll ? departures.length : Math.min(3, departures.length);
+                const visible = departures.slice(0, displayCount);
+                
+                let html = `
+                    <div class="section-header" style="margin-top: 0; background: ${lineColor}; color: ${textColor};">
+                        <span class="direction">${title}</span>
+                    </div>
+                `;
+                
+                if (visible.length === 0) {
+                    html += '<div class="no-trains">No upcoming departures</div>';
+                } else {
+                    visible.forEach(dep => {
+                        const timeInfo = getTimeDisplay(dep.minutes);
+                        const cleanDestination = dep.destination.replace(/^Towards\s+/i, '');
+                        const cleanedStops = cleanStops(dep.stops, dep.fleetNumber);
+                        const rawLineName = dep.route || getLineFromDestination(dep.destination);
+                        const lineName = normalizeLineName(rawLineName);
+                        const depLineColor = getLineColor(lineName);
+                        const depTextColor = getLineTextColor(lineName);
+                        
+                        html += `
+                            <div class="departure-item">
+                                <div class="platform" style="background: linear-gradient(135deg, ${depLineColor} 0%, ${depLineColor}dd 100%); color: ${depTextColor};">
+                                    <span class="platform-label">Platform</span>
+                                    ${dep.platform}
+                                </div>
+                                <div class="destination">
+                                    ${cleanDestination}
+                                    <div class="stops">${cleanedStops}</div>
+                                </div>
+                                <div class="time ${timeInfo.class}">${timeInfo.text}</div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                if (departures.length > 3 && !showAll) {
+                    html += `<button class="show-more-btn" onclick="toggleSplitShowMore('${containerId}')">Show ${departures.length - 3} more departures ▼</button>`;
+                } else if (departures.length > 3 && showAll) {
+                    html += `<button class="show-more-btn" onclick="toggleSplitShowMore('${containerId}')">Show less ▲</button>`;
+                }
+                
+                return html;
+            }
+            
+            // Mandurah line colour for Cockburn/Byford, Armadale for Airport direction
+            const cockburnHtml = buildSplitSection(platform2, 'Cockburn/Byford direction', 'linear-gradient(135deg, #2c5f2d 0%, #1e4620 100%)', '#ffffff', 'plat2');
+            const airportHtml = buildSplitSection(platform4, 'Airport/Ellenbrook/Midland direction', 'linear-gradient(135deg, #2c5f2d 0%, #1e4620 100%)', '#ffffff', 'plat4');
+            
+            southContainer.innerHTML = cockburnHtml + airportHtml;
+        }
+        
+        function toggleSplitShowMore(sectionId) {
+            const southContainer = document.getElementById('south-departures');
+            const key = `showAll_${sectionId}`;
+            southContainer.dataset[key] = southContainer.dataset[key] === 'true' ? 'false' : 'true';
+            if (lastFetchedData) {
+                handleSplitPlatformStation(lastFetchedData);
             }
         }
 
@@ -1378,6 +1596,9 @@
             if (southHeader) {
                 southHeader.style.display = 'none';
             }
+            
+            // Show the platform nav for Perth
+            document.getElementById('platform-nav').classList.add('visible');
             
             // Combine all departures
             let allDepartures = [...data.perth, ...data.south];
@@ -1641,7 +1862,7 @@
                     const color = getLineColor(lineArray[0]);
                     const textColor = getLineTextColor(lineArray[0]);
                     html += `
-                        <div class="section-header" style="margin-top: 15px; background: ${color}; color: ${textColor}; justify-content: center; align-items: center;">
+                        <div id="platform-section-${sanitizedPlatform}" class="section-header" style="margin-top: 15px; background: ${color}; color: ${textColor}; justify-content: center; align-items: center;">
                             <span class="direction">${lineArray[0]}</span>
                         </div>
                     `;
@@ -1649,7 +1870,7 @@
                     // Multiple lines - create striped header with text on each stripe
                     const stripeWidth = 100 / lineArray.length;
                     html += `
-                        <div style="display: flex; margin-top: 15px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+                        <div id="platform-section-${sanitizedPlatform}" style="display: flex; margin-top: 15px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
                     `;
                     lineArray.forEach(lineName => {
                         const color = getLineColor(lineName);
@@ -1727,10 +1948,32 @@
                     handlePerthStation(lastFetchedData);
                 } else if (CURRENT_STATION_ID === '177') {
                     handleElizabethQuayStation(lastFetchedData);
+                } else if (isSplitPlatformStation(CURRENT_STATION_ID)) {
+                    handleSplitPlatformStation(lastFetchedData);
                 } else {
                     renderDepartures(lastFetchedData.perth, 'perth-departures');
                     renderDepartures(lastFetchedData.south, 'south-departures');
                 }
+            }
+        }
+
+        function jumpToPlatform(platform) {
+            // Map button values to sanitized section ids
+            // Platform 5 button should jump to the combined 4/5 section
+            const platformMap = {
+                '1': '1',
+                '2': '2',
+                '4': '4_5',
+                '5': '4_5',
+                '7': '7',
+                '8': '8_9'
+            };
+            const sectionId = 'platform-section-' + (platformMap[platform] || platform);
+            const el = document.getElementById(sectionId);
+            if (el) {
+                const navHeight = document.getElementById('platform-nav').offsetHeight + 8;
+                const top = el.getBoundingClientRect().top + window.scrollY - navHeight;
+                window.scrollTo({ top, behavior: 'smooth' });
             }
         }
 
